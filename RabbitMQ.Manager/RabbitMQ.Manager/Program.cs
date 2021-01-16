@@ -37,7 +37,6 @@ namespace RabbitMQ.Manager
 				return Task.CompletedTask;
 			}, exchangeName: "MyExchange", queueName: "HappySchool.Fetch", routingKey: "FetchStudents.Print");
 
-
 			//using topic exchange feature (HappySchool.History will process the content of FetchStudents.Print and FetchStudents.Remove)
 			rabbitMqService.Consume<Student>((message) =>
 			{
@@ -54,7 +53,6 @@ namespace RabbitMQ.Manager
 				throw new Exception("The student doesnt exists");
 			}, exchangeName: "MyExchange", queueName: "HappySchool.Remove", routingKey: "FetchStudents.Remove");
 			
-
 			//serialize error
 			rabbitMqService.Send(500, exchangeName: "MyExchange", routingKey: "FetchStudents.Print");
 			rabbitMqService.Send(150, exchangeName: "MyExchange", routingKey: "FetchStudents.Print");
