@@ -28,20 +28,36 @@ namespace RabbitMQ.Manager
 				return Task.CompletedTask;
 			}, exchangeName: "MyExchange", queueName: "PrintNumbers", routingKey: "IntContent");
 
-			rabbitMqService.Send(new Student("Lucas", 19), exchangeName: "MyExchange", routingKey: "FetchStudents");
+			rabbitMqService.Send(new Student("Lucas", 19), exchangeName: "MyExchange", routingKey: "FetchStudents.Print");
 			rabbitMqService.Consume<Student>((message) =>
 			{
-				Console.WriteLine("--- Fetching Student ---");
-				Thread.Sleep(5000);
-
+				Console.WriteLine("--- Logging Student ---");
 				Console.WriteLine($"name: {message.Name}, age: {message.Age}");
 
 				return Task.CompletedTask;
-			}, exchangeName: "MyExchange", queueName: "HappySchool", routingKey: "FetchStudents");
+			}, exchangeName: "MyExchange", queueName: "HappySchool.Fetch", routingKey: "FetchStudents.Print");
+
+
+			//using topic exchange feature (HappySchool.History will process the content of FetchStudents.Print and FetchStudents.Remove)
+			rabbitMqService.Consume<Student>((message) =>
+			{
+				Console.WriteLine("--- The Student Has Being Processed ---");
+				Console.WriteLine($"name: {message.Name}, age: {message.Age}");
+
+				return Task.CompletedTask;
+			}, exchangeName: "MyExchange", queueName: "HappySchool.History", routingKey: "FetchStudents.*");
+
+			//retry attempts error (async in this case for not blocks the unique console thread)
+			rabbitMqService.Send(new Student("Lucas", 19), exchangeName: "MyExchange", routingKey: "FetchStudents.Remove");
+			rabbitMqService.Consume<Student>(async (message) =>
+			{
+				throw new Exception("The student doesnt exists");
+			}, exchangeName: "MyExchange", queueName: "HappySchool.Remove", routingKey: "FetchStudents.Remove");
+			
 
 			//serialize error
-			rabbitMqService.Send(500, exchangeName: "MyExchange", routingKey: "FetchStudents");
-			rabbitMqService.Send(150, exchangeName: "MyExchange", routingKey: "FetchStudents");
+			rabbitMqService.Send(500, exchangeName: "MyExchange", routingKey: "FetchStudents.Print");
+			rabbitMqService.Send(150, exchangeName: "MyExchange", routingKey: "FetchStudents.Print");
 
 			Console.ReadKey();
 		}

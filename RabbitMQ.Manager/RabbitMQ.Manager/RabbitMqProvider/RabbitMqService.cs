@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace RabbitMQ.Manager.RabbitMqProvider
 {
@@ -44,10 +45,10 @@ namespace RabbitMQ.Manager.RabbitMqProvider
 			_channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
 			_channel.ExchangeDeclare(exchange: exchangeName, type: EXCHANGE_TYPE, true, false, null);
-			_channel.ExchangeDeclare(exchange: exchangeNameError, type: EXCHANGE_TYPE, true, false, null); //just for logging
+			_channel.ExchangeDeclare(exchange: exchangeNameError, type: EXCHANGE_TYPE, true, false, null); //just for logging exceptions
 
 			_channel.QueueDeclare(queueName, true, false, false, null);
-			_channel.QueueDeclare(queueNameError, true, false, false, null); //just for logging
+			_channel.QueueDeclare(queueNameError, true, false, false, null); //just for logging exceptions
 
 			_channel.QueueBind(queueName, exchangeName, routingKey);
 			_channel.QueueBind(queueNameError, exchangeNameError, routingKey);
